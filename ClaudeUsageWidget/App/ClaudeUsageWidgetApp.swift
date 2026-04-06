@@ -9,7 +9,8 @@ struct ClaudeUsageWidgetApp: App {
             PopoverView()
                 .environment(appViewModel)
         } label: {
-            Text("—")
+            MenuBarView()
+                .environment(appViewModel)
         }
         .menuBarExtraStyle(.window)
     }
