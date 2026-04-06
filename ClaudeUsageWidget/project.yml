@@ -1,0 +1,69 @@
+name: ClaudeUsageWidget
+
+options:
+  deploymentTarget:
+    macOS: "14.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    ARCHS: arm64
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+
+targets:
+  ClaudeUsageWidget:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: App
+      - path: ViewModels
+      - path: Views
+      - path: Services
+      - path: Models
+      - path: Utilities
+      - path: Resources
+        excludes:
+          - "**/*.plist"
+    info:
+      path: Resources/Info.plist
+      properties:
+        LSUIElement: true
+        NSUserNotificationsUsageDescription: "ClaudeUsageWidget sends notifications when your usage approaches configured thresholds."
+        CFBundleName: ClaudeUsageWidget
+        CFBundleDisplayName: ClaudeUsageWidget
+        CFBundleIdentifier: com.procionegobbo.ClaudeUsageWidget
+        CFBundleVersion: "1"
+        CFBundleShortVersionString: "0.1.0"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.procionegobbo.ClaudeUsageWidget
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_ENTITLEMENTS: ClaudeUsageWidget.entitlements
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGNING_REQUIRED: "NO"
+        ENABLE_HARDENED_RUNTIME: "NO"
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+      Debug:
+        SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+      Release:
+        SWIFT_OPTIMIZATION_LEVEL: "-Owholemodule"
+
+  ClaudeUsageWidgetTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: ../ClaudeUsageWidgetTests
+    dependencies:
+      - target: ClaudeUsageWidget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.procionegobbo.ClaudeUsageWidgetTests
+        SWIFT_VERSION: "6.0"
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGN_IDENTITY: ""
