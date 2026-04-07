@@ -19,7 +19,7 @@ struct PopoverView: View {
                 utilization: windows?.five.utilization ?? 0,
                 resetsAt: windows?.five.resetsAt,
                 dataState: viewModel.dataState,
-                threshold: 80.0
+                threshold: viewModel.preferencesStore.fiveHourThreshold
             )
             Divider()
             UsageCardView(
@@ -27,8 +27,20 @@ struct PopoverView: View {
                 utilization: windows?.seven.utilization ?? 0,
                 resetsAt: windows?.seven.resetsAt,
                 dataState: viewModel.dataState,
-                threshold: 80.0
+                threshold: viewModel.preferencesStore.sevenDayThreshold
             )
+            if viewModel.isShowingPreferences {
+                Divider()
+                PreferencesView()
+            }
+            HStack {
+                Spacer()
+                Button { viewModel.isShowingPreferences.toggle() } label: {
+                    Image(systemName: "gear")
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Preferences")
+            }
         }
         .frame(width: 280)
         .padding(.horizontal, 16)

@@ -11,9 +11,9 @@ struct MenuBarView: View {
     private var labelColor: Color {
         guard case .fresh(let data) = viewModel.dataState else { return .gray }
         let utilization = data.fiveHour.utilization
-        // Threshold hardcoded at 80.0; Story 2.1 wires PreferencesStore.
+        let threshold = viewModel.preferencesStore.fiveHourThreshold
         if utilization >= 100 { return .red }
-        if utilization >= 80.0 { return .orange }
+        if utilization >= threshold { return .orange }
         return .green
     }
 

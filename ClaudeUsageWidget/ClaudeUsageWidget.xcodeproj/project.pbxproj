@@ -29,6 +29,8 @@
 		AA2E3140219B7FF834496BB4 /* UsageRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5109621C3828CDF016914874 /* UsageRingView.swift */; };
 		A9B8C7D6E5F4A3B2C1D0E9F8 /* UsageCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B7C8D9E0F1A2 /* UsageCardView.swift */; };
 		C0D1E2F3A4B5C6D7E8F9A0B1 /* UsageCardViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5F6E7D8C9B0A1 /* UsageCardViewTests.swift */; };
+		F2E1D0C9B8A7F6E5D4C3B2A1 /* PreferencesStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* PreferencesStoreTests.swift */; };
+		E3D2C1B0A9F8E7D6C5B4A3F2 /* PollingSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* PollingSchedulerTests.swift */; };
 		B46F60FD45B35738D130DAAD /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25977EE5DBA34F9C67EF76C6 /* AppError.swift */; };
 		B77ABEC12FD8BAFC120CCFA9 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFB6BC4FEE28586202AFF92 /* NotificationManager.swift */; };
 		CE5BC169AD3871A564BF48C6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23723C257D4C876E93B73B2E /* Assets.xcassets */; };
@@ -84,6 +86,8 @@
 		F8F30CAAD8199C1B8A3AF5C9 /* DataStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStateTests.swift; sourceTree = "<group>"; };
 		B1C2D3E4F5A6B7C8D9E0F1A2 /* UsageCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageCardView.swift; sourceTree = "<group>"; };
 		F0E1D2C3B4A5F6E7D8C9B0A1 /* UsageCardViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageCardViewTests.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* PreferencesStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesStoreTests.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* PollingSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PollingSchedulerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -186,6 +190,8 @@
 				D1F3DD005C659BC8B15DD280 /* CredentialsManagerTests.swift */,
 				9D791207EDC08360612A0DFB /* NotificationManagerTests.swift */,
 				07E49252BADEAC57ACE80E43 /* UsageDataServiceTests.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* PreferencesStoreTests.swift */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* PollingSchedulerTests.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -358,6 +364,8 @@
 				6579279EED12F3F70A58BBB9 /* UsageDataServiceTests.swift in Sources */,
 				2797070C0551B8468A8BBF0C /* UsageDataTests.swift in Sources */,
 				C0D1E2F3A4B5C6D7E8F9A0B1 /* UsageCardViewTests.swift in Sources */,
+				F2E1D0C9B8A7F6E5D4C3B2A1 /* PreferencesStoreTests.swift in Sources */,
+				E3D2C1B0A9F8E7D6C5B4A3F2 /* PollingSchedulerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

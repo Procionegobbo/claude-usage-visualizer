@@ -1,3 +1,4 @@
+import AppKit
 import Observation
 
 @Observable
@@ -5,15 +6,41 @@ import Observation
 final class AppViewModel {
     var dataState: DataState = .loading
     private(set) var currentToken: String? = nil
+    var isShowingPreferences: Bool = false
 
+    let preferencesStore = PreferencesStore()
+    private let notificationManager = NotificationManager()
     private let credentialsManager = CredentialsManager()
     private let usageService = UsageDataService()
     private let pollingScheduler = PollingScheduler()
+    private var wakeObserver: NSObjectProtocol?
 
     init() {
         credentialsManager.viewModel = self
         pollingScheduler.viewModel = self
         credentialsManager.start()
+        startObservingPollingInterval()
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.pollingScheduler.restartImmediate()
+            }
+        }
+    }
+
+    private func startObservingPollingInterval() {
+        withObservationTracking {
+            _ = preferencesStore.pollingInterval
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                self.pollingScheduler.updateInterval(self.preferencesStore.pollingInterval * 60)
+                self.startObservingPollingInterval()
+            }
+        }
     }
 
     func onCredentialsAvailable(token: OAuthToken) {
@@ -24,7 +51,7 @@ final class AppViewModel {
         // Start polling only on first credential arrival (not on FSEvents rotations,
         // which go through onCredentialsChanged → pollingScheduler.restartImmediate()).
         if pollingScheduler.pollingTask == nil {
-            pollingScheduler.start()
+            pollingScheduler.start(interval: preferencesStore.pollingInterval * 60)
         }
     }
 
@@ -48,6 +75,7 @@ final class AppViewModel {
         do {
             let data = try await usageService.fetchUsage(token: token)
             dataState = .fresh(data)
+            await notificationManager.evaluate(data: data, prefs: preferencesStore)
         } catch let error as AppError {
             dataState = .error(error)
         } catch {
