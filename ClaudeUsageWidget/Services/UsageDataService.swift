@@ -2,19 +2,29 @@ import Foundation
 
 actor UsageDataService {
     private static let endpoint = URL(string: "https://api.anthropic.com/api/oauth/usage")!
+    private let urlSession: URLSession
+
+    init(urlSession: URLSession = .shared) {
+        self.urlSession = urlSession
+    }
 
     func fetchUsage(token: String) async throws -> UsageData {
         var request = URLRequest(url: Self.endpoint)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
 
-        let (data, response) = try await URLSession.shared.data(for: request)
-        // URLSession always returns HTTPURLResponse for HTTP/HTTPS requests
-        let http = response as! HTTPURLResponse
+        let (data, response) = try await urlSession.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw AppError.apiUnreachable(lastSuccess: nil)
+        }
 
         switch http.statusCode {
         case 200:
-            return try Self.decode(data)
+            do {
+                return try Self.decode(data)
+            } catch {
+                throw AppError.apiError(statusCode: 200)  // 200 OK but response was malformed
+            }
         case 401, 403:
             throw AppError.tokenExpired
         default:

@@ -17,33 +17,44 @@ struct UsageCardView: View {
         return .green
     }
 
-    private var ringFillColor: Color {
+    /// Returns the ring fill color for the given state combination.
+    internal static func ringFillColor(
+        for dataState: DataState, utilization: Double, threshold: Double
+    ) -> Color {
         switch dataState {
-        case .fresh:
-            return Self.semanticColor(for: utilization, threshold: threshold)
-        case .stale:
-            return .gray
-        case .loading:
-            return .gray.opacity(0.3)
-        case .error:
-            return .gray
+        case .fresh: return semanticColor(for: utilization, threshold: threshold)
+        case .stale: return .gray
+        case .loading: return .gray.opacity(0.3)
+        case .error: return .gray
         }
     }
 
-    private var ringUtilization: Double {
+    /// Returns the ring utilization value (0 for non-data states).
+    internal static func ringUtilization(for dataState: DataState, utilization: Double) -> Double {
         switch dataState {
-        case .fresh, .stale:
-            return utilization
-        case .loading, .error:
-            return 0
+        case .fresh, .stale: return utilization
+        case .loading, .error: return 0
         }
     }
 
-    private var isDataAvailable: Bool {
+    /// Returns true when the data state has usage data to display.
+    internal static func isDataAvailable(for dataState: DataState) -> Bool {
         switch dataState {
         case .fresh, .stale: return true
         case .loading, .error: return false
         }
+    }
+
+    private var ringFillColor: Color {
+        Self.ringFillColor(for: dataState, utilization: utilization, threshold: threshold)
+    }
+
+    private var ringUtilization: Double {
+        Self.ringUtilization(for: dataState, utilization: utilization)
+    }
+
+    private var isDataAvailable: Bool {
+        Self.isDataAvailable(for: dataState)
     }
 
     private var accessibilityDescription: String {

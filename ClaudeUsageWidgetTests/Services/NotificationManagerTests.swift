@@ -49,6 +49,33 @@ struct NotificationManagerCrossingEventTests {
     }
 }
 
+// MARK: - crossing sequence
+
+@Suite("NotificationManager — crossing sequence")
+struct NotificationManagerCrossingSequenceTests {
+
+    @Test("first crossing produces event; subsequent above-threshold poll does not (AC5)")
+    func exactlyOneCrossingEvent() {
+        // First poll: utilization crosses threshold
+        let first = NotificationManager.crossingEvent(previous: 79, current: 81, threshold: 80)
+        #expect(first == .thresholdCrossed)
+
+        // Second poll: still above threshold — no new crossing (no re-fire)
+        let second = NotificationManager.crossingEvent(previous: 81, current: 82, threshold: 80)
+        #expect(second == nil)
+    }
+
+    @Test("drop below then re-cross produces new event")
+    func reCrossAfterDrop() {
+        // Back below threshold
+        let dropped = NotificationManager.crossingEvent(previous: 85, current: 75, threshold: 80)
+        #expect(dropped == nil)
+        // Cross again
+        let reCrossed = NotificationManager.crossingEvent(previous: 75, current: 82, threshold: 80)
+        #expect(reCrossed == .thresholdCrossed)
+    }
+}
+
 // MARK: - resetSuffix
 
 @Suite("NotificationManager — resetSuffix")

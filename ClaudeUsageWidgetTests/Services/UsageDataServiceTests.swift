@@ -103,3 +103,49 @@ struct UsageDataServiceTests {
         }
     }
 }
+
+// MARK: - HTTP error mapping (mock URLSession)
+
+@Suite("UsageDataService — HTTP error mapping")
+struct UsageDataServiceHTTPTests {
+
+    @Test("malformed JSON returns apiError(statusCode: 200)")
+    func malformedJsonMapsToApiError() async throws {
+        let service = UsageDataService(urlSession: MockURLProtocol.makeSession(statusCode: 200, data: Data("not json".utf8)))
+        await #expect(throws: AppError.apiError(statusCode: 200)) {
+            _ = try await service.fetchUsage(token: "sk-ant-test")
+        }
+    }
+
+    @Test("HTTP 401 throws tokenExpired")
+    func http401ThrowsTokenExpired() async throws {
+        let service = UsageDataService(urlSession: MockURLProtocol.makeSession(statusCode: 401, data: Data()))
+        await #expect(throws: AppError.tokenExpired) {
+            _ = try await service.fetchUsage(token: "sk-ant-test")
+        }
+    }
+
+    @Test("HTTP 403 throws tokenExpired")
+    func http403ThrowsTokenExpired() async throws {
+        let service = UsageDataService(urlSession: MockURLProtocol.makeSession(statusCode: 403, data: Data()))
+        await #expect(throws: AppError.tokenExpired) {
+            _ = try await service.fetchUsage(token: "sk-ant-test")
+        }
+    }
+
+    @Test("HTTP 503 throws apiError(statusCode: 503)")
+    func http503ThrowsApiError() async throws {
+        let service = UsageDataService(urlSession: MockURLProtocol.makeSession(statusCode: 503, data: Data()))
+        await #expect(throws: AppError.apiError(statusCode: 503)) {
+            _ = try await service.fetchUsage(token: "sk-ant-test")
+        }
+    }
+
+    @Test("network timeout throws non-AppError (caught upstream as apiUnreachable)")
+    func networkTimeoutThrowsURLError() async throws {
+        let service = UsageDataService(urlSession: MockURLProtocol.makeSession(error: URLError(.timedOut)))
+        await #expect(throws: URLError.self) {
+            _ = try await service.fetchUsage(token: "sk-ant-test")
+        }
+    }
+}

@@ -38,4 +38,26 @@ struct OAuthTokenTests {
             _ = try JSONDecoder().decode(OAuthToken.self, from: json)
         }
     }
+
+    // MARK: - Story 3.3: isExpired
+
+    @Test("isExpired returns false when expiresAt is nil")
+    func isExpiredWithNilDate() {
+        let token = OAuthToken(accessToken: "sk-ant", refreshToken: nil, expiresAt: nil)
+        #expect(token.isExpired == false)
+    }
+
+    @Test("isExpired returns true for past expiresAt")
+    func isExpiredWithPastDate() {
+        let past = Date(timeIntervalSinceNow: -3600)
+        let token = OAuthToken(accessToken: "sk-ant", refreshToken: nil, expiresAt: past)
+        #expect(token.isExpired == true)
+    }
+
+    @Test("isExpired returns false for future expiresAt")
+    func isExpiredWithFutureDate() {
+        let future = Date(timeIntervalSinceNow: 3600)
+        let token = OAuthToken(accessToken: "sk-ant", refreshToken: nil, expiresAt: future)
+        #expect(token.isExpired == false)
+    }
 }

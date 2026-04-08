@@ -169,3 +169,117 @@ struct UsageCardViewAccessibilityCountdownTests {
         #expect(UsageCardView.accessibilityCountdownText(from: future, relativeTo: now) == "resets in 2 hours")
     }
 }
+
+// MARK: - ringFillColor
+
+@Suite("UsageCardView — ringFillColor")
+struct UsageCardViewRingFillColorTests {
+
+    private static func makeData(utilization: Double = 50.0) -> UsageData {
+        UsageData(
+            fiveHour: UsageWindow(utilization: utilization, resetsAt: nil),
+            sevenDay: UsageWindow(utilization: utilization, resetsAt: nil),
+            fetchedAt: Date()
+        )
+    }
+
+    @Test("fresh below threshold returns semantic green")
+    func freshBelowThreshold() {
+        let color = UsageCardView.ringFillColor(for: .fresh(Self.makeData()), utilization: 50, threshold: 80)
+        #expect(color == .green)
+    }
+
+    @Test("fresh above threshold returns semantic orange")
+    func freshAboveThreshold() {
+        let color = UsageCardView.ringFillColor(for: .fresh(Self.makeData()), utilization: 85, threshold: 80)
+        #expect(color == .orange)
+    }
+
+    @Test("stale returns gray regardless of utilization")
+    func staleReturnsGray() {
+        let color = UsageCardView.ringFillColor(
+            for: .stale(Self.makeData(), since: .now), utilization: 95, threshold: 80
+        )
+        #expect(color == .gray)
+    }
+
+    @Test("loading returns gray.opacity(0.3)")
+    func loadingReturnsGrayOpacity() {
+        let color = UsageCardView.ringFillColor(for: .loading, utilization: 0, threshold: 80)
+        #expect(color == .gray.opacity(0.3))
+    }
+
+    @Test("error returns gray")
+    func errorReturnsGray() {
+        let color = UsageCardView.ringFillColor(for: .error(.tokenMissing), utilization: 0, threshold: 80)
+        #expect(color == .gray)
+    }
+}
+
+// MARK: - ringUtilization
+
+@Suite("UsageCardView — ringUtilization")
+struct UsageCardViewRingUtilizationTests {
+
+    private static func makeData(utilization: Double = 72.0) -> UsageData {
+        UsageData(
+            fiveHour: UsageWindow(utilization: utilization, resetsAt: nil),
+            sevenDay: UsageWindow(utilization: utilization, resetsAt: nil),
+            fetchedAt: Date()
+        )
+    }
+
+    @Test("fresh returns actual utilization")
+    func freshReturnsUtilization() {
+        #expect(UsageCardView.ringUtilization(for: .fresh(Self.makeData()), utilization: 72) == 72)
+    }
+
+    @Test("stale returns last-known utilization")
+    func staleReturnsLastKnown() {
+        #expect(UsageCardView.ringUtilization(
+            for: .stale(Self.makeData(), since: .now), utilization: 72
+        ) == 72)
+    }
+
+    @Test("loading returns zero")
+    func loadingReturnsZero() {
+        #expect(UsageCardView.ringUtilization(for: .loading, utilization: 0) == 0)
+    }
+
+    @Test("error returns zero")
+    func errorReturnsZero() {
+        #expect(UsageCardView.ringUtilization(for: .error(.apiUnreachable(lastSuccess: nil)), utilization: 0) == 0)
+    }
+}
+
+// MARK: - isDataAvailable
+
+@Suite("UsageCardView — isDataAvailable")
+struct UsageCardViewDataAvailabilityTests {
+
+    private static let sampleData = UsageData(
+        fiveHour: UsageWindow(utilization: 50.0, resetsAt: nil),
+        sevenDay: UsageWindow(utilization: 30.0, resetsAt: nil),
+        fetchedAt: Date()
+    )
+
+    @Test("fresh is data available")
+    func freshIsAvailable() {
+        #expect(UsageCardView.isDataAvailable(for: .fresh(Self.sampleData)) == true)
+    }
+
+    @Test("stale is data available")
+    func staleIsAvailable() {
+        #expect(UsageCardView.isDataAvailable(for: .stale(Self.sampleData, since: .now)) == true)
+    }
+
+    @Test("loading is not data available")
+    func loadingIsNotAvailable() {
+        #expect(UsageCardView.isDataAvailable(for: .loading) == false)
+    }
+
+    @Test("error is not data available")
+    func errorIsNotAvailable() {
+        #expect(UsageCardView.isDataAvailable(for: .error(.tokenExpired)) == false)
+    }
+}

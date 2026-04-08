@@ -26,6 +26,10 @@ final class CredentialsManager {
         setupFileMonitor()
     }
 
+    deinit {
+        fileSource?.cancel()
+    }
+
     func readCredentialsFile() {
         guard let data = FileManager.default.contents(atPath: credentialsPath) else {
             viewModel?.onCredentialsMissing()
@@ -53,11 +57,15 @@ final class CredentialsManager {
     }
 
     private func setupFileMonitor() {
-        let fd = open(credentialsPath, O_EVTONLY)
+        // Monitor the parent directory (~/.claude/) instead of the file itself.
+        // This handles: atomic rename (Claude CLI credential rotation), file creation after launch.
+        let dirPath = URL(fileURLWithPath: credentialsPath)
+            .deletingLastPathComponent().path
+        let fd = open(dirPath, O_EVTONLY)
         guard fd >= 0 else { return }
         let source = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: fd,
-            eventMask: .write,
+            eventMask: [.write, .rename],
             queue: .main
         )
         source.setEventHandler { [weak self] in
@@ -75,6 +83,38 @@ final class CredentialsManager {
         fileSource = source
     }
 
+    /// Attempts an OAuth refresh token grant. Saves the new token to Keychain on success.
+    /// Throws on network error or non-200 response.
+    func tryRefreshToken(_ refreshToken: String) async throws -> OAuthToken {
+        guard let url = URL(string: "https://console.anthropic.com/v1/oauth/token") else {
+            throw URLError(.badURL)
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        // Percent-encode the refresh token to handle any special characters safely
+        let encodedToken = refreshToken.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? refreshToken
+        let body = "grant_type=refresh_token&refresh_token=\(encodedToken)"
+        request.httpBody = body.data(using: .utf8)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+        guard http.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+
+        let decoded = try JSONDecoder().decode(RefreshResponse.self, from: data)
+        let newToken = OAuthToken(
+            accessToken: decoded.accessToken,
+            refreshToken: decoded.refreshToken ?? refreshToken,  // preserve if not rotated
+            expiresAt: decoded.expiresIn.map { Date.now.addingTimeInterval(Double($0)) }
+        )
+        try? KeychainHelper.save(newToken, for: "oauthToken")
+        return newToken
+    }
+
     // MARK: - Private JSON schema
 
     private struct CredentialsFile: Decodable {
@@ -84,6 +124,18 @@ final class CredentialsManager {
             let accessToken: String
             let refreshToken: String?
             let expiresAt: Int?
+        }
+    }
+
+    private struct RefreshResponse: Decodable {
+        let accessToken: String
+        let refreshToken: String?
+        let expiresIn: Int?
+
+        enum CodingKeys: String, CodingKey {
+            case accessToken = "access_token"
+            case refreshToken = "refresh_token"
+            case expiresIn = "expires_in"
         }
     }
 }
