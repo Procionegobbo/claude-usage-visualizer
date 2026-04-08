@@ -66,6 +66,11 @@ struct PopoverView: View {
             }
             HStack {
                 Spacer()
+                Button { NSApp.terminate(nil) } label: {
+                    Image(systemName: "xmark")
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Quit")
                 Button { viewModel.isShowingPreferences.toggle() } label: {
                     Image(systemName: "gear")
                 }
